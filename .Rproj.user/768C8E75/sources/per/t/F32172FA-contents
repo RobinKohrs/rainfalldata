@@ -1,0 +1,15 @@
+---
+title: "netcdf in R"
+author: "Robin Kohrs"
+date: "1/14/2021"
+output: html_document
+---
+
+
+# Some things about netcdf
+
+## variable
+
+- a multidimensional arra of data of the same type
+- A variable has a name, a data type, and a shape described by its list of dimensions,
+

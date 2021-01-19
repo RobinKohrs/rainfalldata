@@ -1,0 +1,13 @@
+"0","# group it by gemeinde and year
+mean_municp_reshape %>% 
+  group_by(NAME_3, year) %>% 
+  summarise(mean_precip = mean(precip)) %>% 
+  ungroup() %>% 
+  ggplot() +
+  geom_path(aes(year, mean_precip, color=NAME_3)) +
+  theme(
+    legend.position = ""none""
+  )
+"
+"2","`summarise()` regrouping output by 'NAME_3' (override with `.groups` argument)
+"

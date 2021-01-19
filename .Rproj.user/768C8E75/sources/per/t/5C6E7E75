@@ -1,0 +1,25 @@
+{
+    "id": "5C6E7E75",
+    "path": "~/eurac/R/rainfall_dataR/R/netcdf4_package.Rmd",
+    "project_path": "R/netcdf4_package.Rmd",
+    "type": "r_markdown",
+    "hash": "1909007991",
+    "contents": "",
+    "dirty": false,
+    "created": 1610638813555.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "tempName": "Untitled3",
+        "cursorPosition": "28,0",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1610636415,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1610636415,
+    "read_only": false,
+    "read_only_alternatives": []
+}

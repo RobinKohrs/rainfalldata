@@ -1,0 +1,162 @@
+---
+title: "netcdf_r"
+author: "Robin Kohrs"
+date: "1/14/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# set ggplot
+theme_set(theme_light())
+```
+
+# packages to work with nstcdf in R
+
+- `ncdf4`
+- `stars`
+- `tidync`
+- `ncmeta`
+
+
+```{r, include=F}
+library(raster)
+library(ncdf4)
+library(ggplot2)
+library(tidyverse)
+library(stars)
+library(tidync)
+library(ncmeta)
+library(here)
+library(iffitoR)
+library(exactextractr)
+
+
+# paths to the data
+data_path = here("data", "DailySeries_1980_2018_Prec.nc")
+
+# load the data with ncdf4
+nc_data = nc_open(data_path)
+# what have we got?
+print(nc_data)
+
+# try stars...
+nc_data = stars::read_ncdf(data_path) # will trow an error
+
+# what does tidnc do?
+data_tidy_nc = tidync(data_path)
+print(data_tidy_nc)
+
+```
+
+> read some metata
+
+```{r}
+ncmeta::nc_grids(data_path)
+ncmeta::nc_vars(data_path) # return the variables
+ncmeta::nc_atts(data_path)
+
+ncmeta::nc_atts(data_path, "DATE") %>% tidyr::unnest(cols=c(value))
+
+```
+# sample extraction of one raster
+
+```{r}
+precip_brick = raster::brick(data_path, varname="precipitation")
+first_ras = precip_brick[[1]]
+class(first_ras)
+first_ras
+```
+
+# get the dates from the netcdf
+
+```{r}
+ncin = ncdf4::nc_open(data_path)
+dates = ncvar_get(ncin, "DATE")
+dunits = ncatt_get(ncin, "DATE", "units")
+
+# convert the time variable
+tustr = strsplit(dunits$value, " ")
+tdstr = strsplit(unlist(tustr)[[3]], "-")
+tmonth = as.integer(unlist(tdstr)[[2]])
+tday = as.integer(unlist(tdstr)[[3]])
+tyear = as.integer(unlist(tdstr)[[1]])
+
+all_dates = chron::chron(dates, origin = c(tmonth, tday, tyear))
+
+# dates as strings
+all_dates_chr = all_dates %>% str_replace_all(., "\\(", "") %>% substr(., 1, 8) %>% str_replace_all(., "\\/", ".")
+# dates as posix datatype
+all_dates_pos = all_dates %>% str_replace_all(., "\\(", "") %>% substr(., 1, 8) %>% as.Date(., "%m/%d/%y")
+```
+
+
+```{r}
+st = iffitoR::get_shape_southtyrol() %>% select(geometry, NAME_3)
+```
+
+# extract bozen
+
+```{r}
+# extract the preipitation values for each gemeinde
+ex = exact_extract(precip_brick, st, "mean") 
+names(ex) = all_dates_chr
+
+# test it only for bozen
+bozen = st %>% filter(str_detect(NAME_3, regex(pattern = "bolzano", ignore_case = T)))
+ex1 = exact_extract(precip_brick, bozen, fun="mean", append_cols=c("NAME_3"))
+
+# reshape it
+ex_bolzano_mean = ex1 %>% pivot_longer(!NAME_3, names_to="dates", values_to="mean_daily_rainfall") %>% 
+  mutate(dates = all_dates_pos)
+```
+
+## get some summary stats
+
+```{r}
+# group by year 
+ex_bolzano_mean %>% 
+  # creat only the year column
+  mutate(year = as.integer(format(dates, "%Y"))) %>%
+  ggplot() +
+  geom_boxplot(aes(year, mean_daily_rainfall, group=year)) +
+  scale_y_log10() +
+  labs(y = "Mean daily rainfall [mm]",
+       x = "Year",
+       title="Mean Daily Rainfall for Bolzano",
+       subtitle = "1980 - 2018")
+```
+
+# extract all the municipalities
+
+```{r}
+ex_all = exact_extract(precip_brick, st, fun="mean", append_cols=c("NAME_3"))
+# write it out
+mean_precip_per_munipality_path = here("data", "mean_precip_per_munipality.csv")
+if(!file.exists(mean_precip_per_munipality_path)){
+  data.table::fwrite(ex_all, mean_precip_per_munipality_path)
+}
+```
+
+
+```{r}
+# read it back in
+mean_precip_per_munipality = data.table::fread(mean_precip_per_munipality_path) 
+names(mean_precip_per_munipality)[2:length(names(mean_precip_per_munipality))] = all_dates_chr
+# reshape it
+mean_municp_reshape = mean_precip_per_munipality %>% pivot_longer(!NAME_3, names_to="date", values_to="precip") %>% 
+  mutate(date = as.Date(date, format="%d.%m.%y"),
+         year = as.integer(format(date, "%Y")))
+
+# group it by gemeinde and year
+mean_municp_reshape %>% 
+  group_by(NAME_3, year) %>% 
+  summarise(mean_precip = mean(precip)) %>% 
+  ungroup() %>% 
+  ggplot() +
+  geom_path(aes(year, mean_precip, color=NAME_3)) +
+  theme(
+    legend.position = "none"
+  )
+```
+

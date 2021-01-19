@@ -1,0 +1,44 @@
+---
+  title: "netcdf_r"
+author: "Robin Kohrs"
+date: "1/14/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r}
+ncpath = here("data", "DailySeries_1980_2018_Prec.nc")
+ncname = "precipitation"
+ncfname = paste(ncpath, ncname, ".nc", sep="")
+ncin = nc_open(ncpath)
+print(ncin)
+```
+
+
+## get coordinate information
+
+```{r}
+x = ncvar_get(ncin, "x")
+y = ncvar_get(ncin, "y")
+```
+
+## get the time information
+
+```{r}
+time = ncvar_get(ncin, "DATE")
+# get its untis
+tunits = ncatt_get(ncin, "DATE", "units")
+```
+
+
+## get the precip data
+
+```{r}
+precip_array = ncvar_get(ncin, "precipitation")
+```
+
