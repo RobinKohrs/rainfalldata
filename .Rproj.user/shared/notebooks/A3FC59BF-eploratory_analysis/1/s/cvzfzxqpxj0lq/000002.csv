@@ -1,5 +1,0 @@
-"0","st = iffitoR::get_shape_southtyrol() %>% select(geometry())
-"
-"2","Error: unable to find an inherited method for function ‘geometry’ for signature ‘""missing""’
-[90mRun `rlang::last_error()` to see where the error occurred.[39m
-"

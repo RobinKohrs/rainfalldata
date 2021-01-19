@@ -1,5 +1,0 @@
-"0","# set ggplot
-set_theme(theme_light())
-"
-"2","Error in set_theme(theme_light()) : could not find function ""set_theme""
-"
