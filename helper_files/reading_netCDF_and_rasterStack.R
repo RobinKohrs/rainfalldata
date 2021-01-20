@@ -11,7 +11,7 @@ library(scales)
 library(ggplot2)
 #-----------------------------------------
 # set the parth to files and year/month of interest
-path.input<-"//Abz01sat.eurac.edu/sat/Workspaces/CrA/DAILY_METEO_GRIDS/PRECIPITATION/REWRITTEN/"
+path.input<-"\\\\projectdata.eurac.edu/projects/Proslide/PREC_GRIDS/"
 year<-2017
 month<-8
 
@@ -39,7 +39,7 @@ for(i in 1:length(dates)){
   tmp <- values[,,i]; tmp[tmp==fillvalue$value]<-NA
   mat <- matrix(tmp, ncol(r.ex))
   mat <- mat[, ncol(mat) : 1 ]
-  r.ex[]<-NA;r.ex[] <- as.vector(mat)  
+  r.ex[]<-NA;r.ex[] <- as.vector(mat)
   prec.stack[[i]]<-r.ex
 }
 
@@ -54,7 +54,7 @@ levelplot(prec.stack[[7:10]],col.regions=colorRampPalette((brewer.pal(9,"GnBu"))
 #------------------------------------------------------------------------------------------------------------------
 # example of point extraction from raster using lat-long coordinates
 # insert the coordinates of Bolzano and convert them in tmerc
-xy.latlong<-data.frame(X=11.33982,Y=46.49067) 
+xy.latlong<-data.frame(X=11.33982,Y=46.49067)
 coordinates(xy.latlong) <- c("X", "Y")
 proj4string(xy.latlong)<- CRS("+proj=longlat +datum=WGS84")
 xy.conv <- spTransform(xy.latlong, CRS(proj))

@@ -24,11 +24,11 @@ wcps_rasdaman = function(query=NULL, ip="http://saocompute.eurac.edu", only.head
       res = HEAD(url)
     }
   }else{
-    out.path = ".data"
+    out.path = "data"
     if(!file.exists(out.path)){
       dir.create(out.path, recursive = T)
     }
-    file_path = paste0(out.path, "/mean_rainfall_southTyrol.nc")
+    file_path = paste0( out.path, "/mean_rainfall_southTyrol.nc")
     download.file(url, destfile = file_path)
   }
 
